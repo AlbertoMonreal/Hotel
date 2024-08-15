@@ -9,6 +9,7 @@ public class App
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
+
 				new LoginGUI().setVisible(true);
 			}
 		});

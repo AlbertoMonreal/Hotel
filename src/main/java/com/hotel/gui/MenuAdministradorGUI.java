@@ -13,19 +13,35 @@ public class MenuAdministradorGUI extends BaseFrame {
 
     @Override
     protected void addGuiComponents() {
-        setLayout(new GridLayout(4, 1, 10, 10)); // Ajusto el diseño.
 
-        // Botón para gestionar habitaciones
-        JButton manageRoomsButton = new JButton("Gestionar Habitaciones");
-        manageRoomsButton.setFont(new Font("Dialog", Font.PLAIN, 18));
-        manageRoomsButton.addActionListener(new ActionListener() {
+        setLayout(new GridLayout(4, 1, 10, 10)); // Ajusto el diseño.(habrá que cambiarla?)
+
+        // Botón para ver habitaciones
+        JButton showRoomsButton = new JButton("Ver Habitaciones");
+        showRoomsButton.setFont(new Font("Dialog", Font.PLAIN, 18));
+        showRoomsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new ManageRoomsGUI().setVisible(true);
+                ShowRoomsGUI showRoomsGUI = new ShowRoomsGUI();
+                // Llamar a refreshData para cargar los datos más recientes antes de hacerla visible.
+                showRoomsGUI.refreshDataTabla();
+                // La hago visible.
+                showRoomsGUI.setVisible(true);
             }
         });
-        add(manageRoomsButton);
-
+        add(showRoomsButton);
+        
+        // Botón para gestionar clientes(reservar y dejar habitacion)
+        JButton gestionClientes = new JButton("Gestion clientes");
+        gestionClientes.setFont(new Font("Dialog", Font.PLAIN, 18));
+        gestionClientes.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new ManageClientsGUI().setVisible(true);
+            }
+        });
+        add(gestionClientes);
+        
         // Botón para Informes
         JButton reportsButton = new JButton("Informes");
         reportsButton.setFont(new Font("Dialog", Font.PLAIN, 18));

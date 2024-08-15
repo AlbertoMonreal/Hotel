@@ -3,6 +3,10 @@ package com.hotel.database;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.ArrayList;
+import com.hotel.samples.HabitacionConCliente;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
@@ -69,7 +73,7 @@ public class DatabaseHelper {
 
     // Método para encriptar la contraseña
     public static String hashPassword(String password) {
-        // Genero un salt y encripto la contraseña
+        // Genero un salt de 12 y encripto la contraseña.
         return BCrypt.withDefaults().hashToString(12, password.toCharArray());
     }
 
@@ -78,4 +82,115 @@ public class DatabaseHelper {
         // Verifico que la contraseña proporcionada coincide con la contraseña encriptada
         return BCrypt.verifyer().verify(password.toCharArray(), hashed).verified;
     }
+
+
+    public static List<HabitacionConCliente> getHabitacionesClienteTabla() {
+
+        List<HabitacionConCliente> habitacionesCliente = new ArrayList<>();
+        /*String sql = "SELECT h.id, h.tipo, h.EstaReservada, c.nombre AS cliente_nombre, c.apellido AS cliente_apellido " +
+                        "FROM habitaciones h " + "JOIN clientes c ON h.ClienteID = c.id";*/
+
+        //De esta manera permites valores nulos de cliente.
+        String sql = "SELECT h.id, h.tipo, h.EstaReservada, c.nombre AS cliente_nombre, c.apellido AS cliente_apellido " +
+                        "FROM habitaciones h " +
+                        "LEFT JOIN clientes c ON h.ClienteID = c.id";
+        
+        try (Connection conn = getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery()) {
+    
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String tipo = rs.getString("tipo");
+                boolean estaReservada = rs.getBoolean("EstaReservada");
+                String clienteNombre = rs.getString("cliente_nombre");
+                String clienteApellido = rs.getString("cliente_apellido");
+    
+                HabitacionConCliente habitacion = new HabitacionConCliente(
+                    id,
+                    tipo,
+                    estaReservada,
+                    clienteNombre != null ? clienteNombre : "No disponible", //Si no hay nombre, que se imprima el valor como No Disponible
+                    clienteApellido != null ? clienteApellido : "No disponible" //Si no hay apellido, que se imprima el valor como No Disponible
+                );
+                habitacionesCliente.add(habitacion);
+            }
+    
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return habitacionesCliente;
+    }
+
+    public static List<HabitacionConCliente> getHabitacionesDisponibles() {
+        List<HabitacionConCliente> habitacionesCliente = new ArrayList<>();
+    
+        // Consulta para obtener solo las habitaciones disponibles (no reservadas)
+        String sql = "SELECT h.id, h.tipo, h.EstaReservada, c.nombre AS cliente_nombre, c.apellido AS cliente_apellido " +
+                     "FROM habitaciones h " +
+                     "LEFT JOIN clientes c ON h.ClienteID = c.id " +
+                     "WHERE h.EstaReservada = FALSE";  // Filtra las habitaciones no reservadas
+    
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+    
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String tipo = rs.getString("tipo");
+                boolean estaReservada = rs.getBoolean("EstaReservada");
+                String clienteNombre = rs.getString("cliente_nombre");
+                String clienteApellido = rs.getString("cliente_apellido");
+    
+                HabitacionConCliente habitacion = new HabitacionConCliente(
+                    id,
+                    tipo,
+                    estaReservada,
+                    clienteNombre != null ? clienteNombre : "No disponible",
+                    clienteApellido != null ? clienteApellido : "No disponible"
+                );
+                habitacionesCliente.add(habitacion);
+            }
+    
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return habitacionesCliente;
+    }
+    //Obtener precio de la habitacion.
+    public static double getPrecioHabitacion(int habitacionID) {
+        double precio = 0.0;
+        String sql = "SELECT Precio FROM habitaciones WHERE id = ?";
+    
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+    
+            pstmt.setInt(1, habitacionID);
+            ResultSet rs = pstmt.executeQuery();
+    
+            if (rs.next()) {
+                precio = rs.getDouble("Precio");
+            }
+    
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return precio;
+    }
+    
+    
+
+    public static int saveCliente(String nombre, String apellido, String dni, String email, String telefono,
+            String fechaSalida) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'saveCliente'");
+    }
+
+    public static boolean reservarHabitacion(int habitacionID, int clienteID) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'reservarHabitacion'");
+    }
+    
+
+    
 }
