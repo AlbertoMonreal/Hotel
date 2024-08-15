@@ -31,7 +31,7 @@ public class ManageClientsGUI extends JFrame {
     public ManageClientsGUI() {
         setTitle("Gestión de Clientes");
         setSize(600, 600);  // Aumenta el tamaño para acomodar la lista
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); //Solo cierro esta pestaña.
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); //Solo cierro esta pestaña.
         setLocationRelativeTo(null);
         setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS)); // Usar BoxLayout para organizar verticalmente
         

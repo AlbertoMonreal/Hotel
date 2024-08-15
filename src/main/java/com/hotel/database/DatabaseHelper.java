@@ -127,13 +127,13 @@ public class DatabaseHelper {
     
         // Consulta para obtener solo las habitaciones disponibles (no reservadas)
         String sql = "SELECT h.id, h.tipo, h.EstaReservada, c.nombre AS cliente_nombre, c.apellido AS cliente_apellido " +
-                     "FROM habitaciones h " +
-                     "LEFT JOIN clientes c ON h.ClienteID = c.id " +
-                     "WHERE h.EstaReservada = FALSE";  // Filtra las habitaciones no reservadas
+                    "FROM habitaciones h " +
+                    "LEFT JOIN clientes c ON h.ClienteID = c.id " +
+                    "WHERE h.EstaReservada = FALSE";  // Filtra las habitaciones no reservadas
     
         try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery()) {
     
             while (rs.next()) {
                 int id = rs.getInt("id");
@@ -163,7 +163,7 @@ public class DatabaseHelper {
         String sql = "SELECT Precio FROM habitaciones WHERE id = ?";
     
         try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
     
             pstmt.setInt(1, habitacionID);
             ResultSet rs = pstmt.executeQuery();
@@ -180,15 +180,107 @@ public class DatabaseHelper {
     
     
 
-    public static int saveCliente(String nombre, String apellido, String dni, String email, String telefono,
-            String fechaSalida) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'saveCliente'");
+public static int saveCliente(String nombre, String apellido, String dni, String email, String telefono,String fechaSalida) {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+
+        try {
+            // Conectar a la base de datos
+            connection = DriverManager.getConnection(URL, USER, PASSWORD);
+
+            // SQL para insertar un nuevo cliente
+            String sql = "INSERT INTO clientes (nombre, apellido, dni, email, telefono, fecha_salida) VALUES (?, ?, ?, ?, ?, ?)";
+            preparedStatement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
+            preparedStatement.setString(1, nombre);
+            preparedStatement.setString(2, apellido);
+            preparedStatement.setString(3, dni);
+            preparedStatement.setString(4, email);
+            preparedStatement.setString(5, telefono);
+            preparedStatement.setString(6, fechaSalida);
+
+            // Ejecutar la inserción
+            int affectedRows = preparedStatement.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Creating client failed, no rows affected.");
+            }
+
+            // Obtener el ID del cliente recién insertado
+            resultSet = preparedStatement.getGeneratedKeys();
+            if (resultSet.next()) {
+                return resultSet.getInt(1);  // Retorna el ID del cliente
+            } else {
+                throw new SQLException("Creating client failed, no ID obtained.");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();  
+            return -1;  // Error al guardar el cliente
+        } finally {
+            try {
+                if (resultSet != null) resultSet.close();
+                if (preparedStatement != null) preparedStatement.close();
+                if (connection != null) connection.close();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 
     public static boolean reservarHabitacion(int habitacionID, int clienteID) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'reservarHabitacion'");
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+
+        try {
+            // Me conecto a la BD
+            connection = DriverManager.getConnection(URL, USER, PASSWORD);
+
+            // SQL para actualizar la habitación como reservada
+            String sql = "UPDATE habitaciones SET clienteID = ?, EstaReservada = TRUE WHERE id = ?";
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, clienteID);
+            preparedStatement.setInt(2, habitacionID);
+
+            // Ejecutar la actualización
+            int affectedRows = preparedStatement.executeUpdate();
+            return affectedRows > 0;  // Retorna true si la actualización fue exitosa
+
+        } catch (SQLException e) {
+            e.printStackTrace();  
+            return false;  // Indico que hubo un error al reservar la habitación
+        } finally {
+            try {
+                if (preparedStatement != null) preparedStatement.close();
+                if (connection != null) connection.close();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    // Método para liberar una "reserva".(Puede ser mas óptimo si creamos una tabla reserva.)
+    public static boolean liberarReserva(int clienteID) {
+        try (Connection conn = getConnection();
+            PreparedStatement updateHabitacionStmt = conn.prepareStatement(
+                "UPDATE habitaciones SET clienteID = NULL, EstaReservada = FALSE WHERE clienteID = ?");
+            PreparedStatement deleteClienteStmt = conn.prepareStatement(
+                "DELETE FROM clientes WHERE id = ?")) {
+
+            // Primero, desasociar el cliente de todas las habitaciones en las que esté reservado
+            updateHabitacionStmt.setInt(1, clienteID);
+            int habitacionesActualizadas = updateHabitacionStmt.executeUpdate();
+
+            // Luego, se elimina el cliente
+            deleteClienteStmt.setInt(1, clienteID);
+            int clienteEliminado = deleteClienteStmt.executeUpdate();
+
+            // Verificar si ambos procesos se realizaron con éxito
+            return habitacionesActualizadas > 0 || clienteEliminado > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;  // Error al liberar la reserva
+        }
     }
     
 

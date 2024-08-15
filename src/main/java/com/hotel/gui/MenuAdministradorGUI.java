@@ -32,26 +32,26 @@ public class MenuAdministradorGUI extends BaseFrame {
         add(showRoomsButton);
         
         // Botón para gestionar clientes(reservar y dejar habitacion)
-        JButton gestionClientes = new JButton("Gestion clientes");
-        gestionClientes.setFont(new Font("Dialog", Font.PLAIN, 18));
-        gestionClientes.addActionListener(new ActionListener() {
+        JButton gestionClientesButton = new JButton("Gestion clientes");
+        gestionClientesButton.setFont(new Font("Dialog", Font.PLAIN, 18));
+        gestionClientesButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 new ManageClientsGUI().setVisible(true);
             }
         });
-        add(gestionClientes);
+        add(gestionClientesButton);
         
-        // Botón para Informes
-        JButton reportsButton = new JButton("Informes");
-        reportsButton.setFont(new Font("Dialog", Font.PLAIN, 18));
-        reportsButton.addActionListener(new ActionListener() {
+        // Botón para dejar reservas
+        JButton liberarReservaButton = new JButton("Liberar reserva");
+        liberarReservaButton.setFont(new Font("Dialog", Font.PLAIN, 18));
+        liberarReservaButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new ReportsGUI().setVisible(true);
+                new LiberarReservaGUI().setVisible(true);
             }
         });
-        add(reportsButton);
+        add(liberarReservaButton);
 
         // Botón para cerrar sesión y volver al menu.
         JButton logoutButton = new JButton("Cerrar Sesión");
